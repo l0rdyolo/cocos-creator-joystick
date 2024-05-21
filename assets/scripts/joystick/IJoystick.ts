@@ -1,4 +1,4 @@
-import { _decorator, Component, EventTouch, Node, Vec3 } from 'cc';
+import { _decorator,  EventTouch, Vec3 } from 'cc';
 const { ccclass, property } = _decorator;
 
 export default interface IJoystick {
