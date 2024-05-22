@@ -16,6 +16,7 @@ import { tweenManager } from "../managers/TweenManager";
   export abstract class AbstractJoystick extends Component implements IJoystick {
     @property(Node) protected ring: Node | null = null;
     @property(Node) protected stick: Node | null = null;
+    @property(Boolean) protected isDynamic: Boolean = false;
   
     private opacityComponent : UIOpacity;
 
@@ -24,9 +25,8 @@ import { tweenManager } from "../managers/TweenManager";
     protected radius: number;
     protected touchId: number;
     protected direction: Vec3 = new Vec3();
-    protected lastDirection: Vec3 = new Vec3();
-    protected isDynamic: boolean;
-  
+    private isTweening:boolean;
+
     abstract onTouchStart(event: EventTouch): void;
     abstract onTouchMove(event: EventTouch): void;
     abstract onTouchEnd(event: EventTouch): void;
@@ -61,8 +61,8 @@ import { tweenManager } from "../managers/TweenManager";
       }
     }
   
-    getDirection(): Vec3 {
-      return this.direction;
+    public getDirection(): Vec3 {
+      return this.touchId === 1 ? this.direction : Vec3.ZERO;
     }
   
     protected updateStickPosition(event: EventTouch): void {
@@ -73,16 +73,32 @@ import { tweenManager } from "../managers/TweenManager";
         .getComponent(UITransform)
         .convertToNodeSpaceAR(touchPos);
         
-        
+
+        // //the code below making stick follow new touch pos
+        // //follow new touch
+        if(this.isDynamic){
+          const isTouchOutOfRange = worldPos;
+          if(!this.isTweening && isTouchOutOfRange.length() > this.radius *2  ){
+            this.isTweening = true;
+              tweenManager.tweenTargetPos(this.ring,this.touchStartPos,
+                ()=>{
+                      this.isTweening = false;
+                }
+              );
+            }
+        }
+
+
+
         //converted touchStartPos
         this.limitJoystick(worldPos);
         this.stick.position = worldPos;        
-        this.updateDirection(worldPos);
+        this.updateDirection(worldPos || Vec3.ZERO);
       }
-  
+
+
       // //direction log
       // console.log(this.getDirection().x , this.getDirection().y);
-      
     }
 
     protected updateJoystickPosition(event: EventTouch): void {
@@ -91,11 +107,6 @@ import { tweenManager } from "../managers/TweenManager";
         .getComponent(UITransform)
         .convertToNodeSpaceAR(touchPos);
       this.touchStartPos = worldPos;
-
-      // if(worldPos.length() > this.radius * 1.5 && this.touchId === 2){
-      //   tweenManager.tweenTargetPos(this.ring ,worldPos)
-        
-      // }
     }
   
     protected resetStickPos(): void {
@@ -110,14 +121,11 @@ import { tweenManager } from "../managers/TweenManager";
       // this.stick.active = true;
       this.updateRingPosition();
       tweenManager.tweenOpacity(this.opacityComponent , false)
-
-
     }
   
 
     private updateRingPosition(){
       this.ring.setPosition(this.touchStartPos);
-      
     }
 
     private limitJoystick(stickWorldPos : Vec3) : void{
@@ -125,7 +133,6 @@ import { tweenManager } from "../managers/TweenManager";
       if(stickWorldPos.length() > this.radius){
           stickWorldPos.multiplyScalar(this.radius/stickWorldPos.length());
       }
-
     }
     //convert vec2 to vec3
     protected getVector3(_vec2: Vec2): Vec3 {
@@ -145,8 +152,8 @@ import { tweenManager } from "../managers/TweenManager";
     }
   
     protected updateDirection(stickWorldPos:Vec3):void{
-      this.direction.set(stickWorldPos.x / this.radius, stickWorldPos.y / this.radius, 0);
+      this.direction.set(stickWorldPos.x / (this.radius/2), stickWorldPos.y / (this.radius/2), 0);
       this.direction.clampf(new Vec3(-1, -1, -1), new Vec3(1, 1, 1));
-  
+      
     }
   }

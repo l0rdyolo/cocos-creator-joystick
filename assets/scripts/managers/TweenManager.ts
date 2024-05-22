@@ -5,8 +5,8 @@ const { ccclass, property } = _decorator;
 export class TweenManager extends Component {
 
 
-    opacityDuration:number = 0.5;
-    targetPosDuration:number = 0.5;
+    opacityDuration:number = 0.31;
+    targetPosDuration:number = 0.31;
     isMoveTweening:boolean = false;
 
     start() {
@@ -25,7 +25,7 @@ export class TweenManager extends Component {
         .start();
     }
 
-    tweenTargetPos( tweenNode : Node,targetPos : Vec3 ){
+    tweenTargetPos( tweenNode : Node,targetPos : Vec3 , onComplete?: () => void){
         tween(tweenNode)
         .to(
             this.targetPosDuration,
@@ -33,9 +33,7 @@ export class TweenManager extends Component {
                 position:targetPos
             }
         )
-        .call(()=>{
-            // this.isMoveTweening = false;
-        })
+        .call(onComplete)
         .start();
     }
 

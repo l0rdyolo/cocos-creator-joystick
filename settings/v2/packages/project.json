@@ -1,0 +1,12 @@
+{
+  "layer": [
+    {
+      "name": "joystick",
+      "value": 2
+    },
+    {
+      "name": "car",
+      "value": 4
+    }
+  ]
+}
